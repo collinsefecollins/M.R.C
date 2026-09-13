@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRC Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0b0d15; color: #fff; padding: 24px; }
+.container { max-width: 1200px; margin: 0 auto; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 28px; padding: 32px; }
+h1 { font-size: 28px; font-weight: 900; }
+h1 span { color: #00d4ff; }
+.badge { background: #ff9100; color: #0b0d15; padding: 4px 14px; border-radius: 40px; font-size: 12px; font-weight: 700; }
+.sub { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 20px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; flex-wrap: wrap; }
+.tabs button { background: transparent; border: none; color: rgba(255,255,255,0.5); font-weight: 600; padding: 8px 14px; border-radius: 40px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 13px; }
+.tabs button.active { background: rgba(255,255,255,0.08); color: #00d4ff; }
+.section { display: none; } .section.active { display: block; }
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 18px; margin-bottom: 12px; }
+.card .row1 { display: flex; justify-content: space-between; align-items: start; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.card .email { font-weight: 700; }
+.card .meta { font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+.card .actions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.btn { padding: 8px 16px; border: none; border-radius: 40px; font-weight: 600; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: 'Inter', sans-serif; }
+.btn-primary { background: #00d4ff; color: #0b0d15; }
+.btn-success { background: #00c853; color: #0b0d15; }
+.btn-warn { background: #ff9100; color: #0b0d15; }
+.btn-danger { background: #ff5252; color: #0b0d15; }
+.btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.15); color: #fff; }
+.flex-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; margin-bottom: 16px; align-items: center; }
+.logout-link { color: #ff5252; font-weight: 600; cursor: pointer; font-size: 14px; }
+.empty { color: rgba(255,255,255,0.3); text-align: center; padding: 30px; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 999; padding: 20px; }
+.modal.show { display: flex; }
+.modal-box { background: #1a1d2a; border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 26px; max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto; }
+.modal-box h3 { margin-bottom: 14px; }
+.modal-box label { display: block; font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 4px; margin-top: 10px; }
+.modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04); color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; }
+.modal-box textarea { min-height: 80px; resize: vertical; }
+.modal-box .btn { width: 100%; justify-content: center; margin-top: 12px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.detail-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 10px; }
+.detail-item .l { font-size: 11px; color: rgba(255,255,255,0.4); }
+.detail-item .v { font-weight: 600; font-size: 13px; word-break: break-word; }
+.msg-log { background: rgba(255,255,255,0.03); border-left: 3px solid #00d4ff; padding: 10px 12px; border-radius: 8px; margin-top: 8px; font-size: 12px; }
+.msg-log .t { font-weight: 700; margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔐 M<span>R</span>C <span class="badge">Admin</span></h1>
+  <div class="sub">Server-protected admin panel. Every action is logged.</div>
+
+  <div class="flex-row">
+    <div class="tabs">
+      <button class="active" data-tab="users">👥 Users</button>
+      <button data-tab="deposits">💰 Deposits</button>
+      <button data-tab="messages">📩 Messages</button>
+      <button data-tab="logs">📜 Logs</button>
+    </div>
+    <a class="logout-link" id="logout">Logout</a>
+  </div>
+
+  <div id="sec-users" class="section active"><div id="usersList"><div class="empty">Loading…</div></div></div>
+  <div id="sec-deposits" class="section"><div id="depositsList"><div class="empty">Loading…</div></div></div>
+  <div id="sec-messages" class="section"><div id="messagesList"><div class="empty">Loading…</div></div></div>
+  <div id="sec-logs" class="section"><div id="logsList"><div class="empty">Loading…</div></div></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3 id="modalTitle">Action</h3>
+    <div id="modalBody"></div>
+    <button class="btn btn-primary" id="modalConfirm">Confirm</button>
+    <button class="btn btn-outline" id="modalCancel" style="margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+const ADMIN_EMAIL = 'admin@mrc.com';
+const ADMIN_PASS = 'admin123';
+
+if (!sessionStorage.getItem('mrc_admin')) {
+  const pw = prompt('🔐 Admin Password:');
+  if (pw === ADMIN_PASS) sessionStorage.setItem('mrc_admin', 'true');
+  else { document.body.innerHTML = '<h2 style="text-align:center;margin-top:60px;">Access Denied</h2>'; throw new Error('denied'); }
+}
+
+function showModal(title, bodyHTML, onConfirm) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = bodyHTML;
+  document.getElementById('modal').classList.add('show');
+  document.getElementById('modalConfirm').onclick = () => { document.getElementById('modal').classList.remove('show'); onConfirm(); };
+  document.getElementById('modalCancel').onclick = () => document.getElementById('modal').classList.remove('show');
+}
+
+async function adminCall(action, targetEmail, data) {
+  const res = await fetch(API + '/admin/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminEmail: ADMIN_EMAIL, action, targetEmail, data })
+  });
+  return await res.json();
+}
+
+document.querySelectorAll('.tabs button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + b.dataset.tab).classList.add('active');
+    if (b.dataset.tab === 'users') loadUsers();
+    if (b.dataset.tab === 'deposits') loadDeposits();
+    if (b.dataset.tab === 'messages') loadMessages();
+    if (b.dataset.tab === 'logs') loadLogs();
+  });
+});
+
+function esc(s) { return String(s || '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+
+// ============ USERS ============
+async function loadUsers() {
+  const list = document.getElementById('usersList');
+  const r = await adminCall('list');
+  if (r.error) { list.innerHTML = '<div class="empty" style="color:#ff5252">' + esc(r.error) + '</div>'; return; }
+  if (!r.length) { list.innerHTML = '<div class="empty">No users yet.</div>'; return; }
+
+  list.innerHTML = r.map(u => `
+    <div class="card">
+      <div class="row1">
+        <div>
+          <div class="email">${esc(u.name)} <span style="color:rgba(255,255,255,0.4);font-size:13px;">&lt;${esc(u.email)}&gt;</span></div>
+          <div class="meta">
+            📍 ${esc(u.country||'—')} · ${esc(u.address||'—')}<br>
+            💰 ${esc(u.currency_symbol||'$')}${(u.balance||0).toFixed(2)} ${esc(u.currency_code||'USD')} ·
+            ${u.frozen ? '❄️ Frozen' : '✅ Active'} ·
+            📅 ${u.created_at ? new Date(u.created_at).toLocaleDateString() : '—'}
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="viewUser('${esc(u.email)}')"><i class="fas fa-eye"></i> View</button>
+        <button class="btn btn-warn" onclick="editBalance('${esc(u.email)}')"><i class="fas fa-coins"></i> Balance</button>
+        <button class="btn btn-success" onclick="sendTo('${esc(u.email)}')"><i class="fas fa-envelope"></i> Message</button>
+        <button class="btn ${u.frozen?'btn-success':'btn-danger'}" onclick="toggleFreeze('${esc(u.email)}', ${!!u.frozen})">
+          <i class="fas ${u.frozen?'fa-unlock':'fa-lock'}"></i> ${u.frozen?'Unfreeze':'Freeze'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.viewUser = async function(email) {
+  const r = await adminCall('get', email);
+  if (r.error) { alert(r.error); return; }
+  const u = r.user;
+  const msgs = r.messages || [];
+  const logs = r.balanceLogs || [];
+
+  const html = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="l">Full Name</div><div class="v">${esc(u.name)}</div></div>
+      <div class="detail-item"><div class="l">Email</div><div class="v">${esc(u.email)}</div></div>
+      <div class="detail-item"><div class="l">Phone</div><div class="v">${esc(u.phone||'—')}</div></div>
+      <div class="detail-item"><div class="l">Country</div><div class="v">${esc(u.country||'—')}</div></div>
+      <div class="detail-item"><div class="l">Address</div><div class="v">${esc(u.address||'—')}</div></div>
+      <div class="detail-item"><div class="l">Currency</div><div class="v">${esc(u.currency_symbol||'$')} ${esc(u.currency_code||'USD')}</div></div>
+      <div class="detail-item"><div class="l">Balance</div><div class="v">${esc(u.currency_symbol||'$')}${(u.balance||0).toFixed(2)}</div></div>
+      <div class="detail-item"><div class="l">Status</div><div class="v">${u.frozen?'❄️ Frozen':'✅ Active'}</div></div>
+      <div class="detail-item"><div class="l">Registered</div><div class="v">${u.created_at?new Date(u.created_at).toLocaleString():'—'}</div></div>
+      <div class="detail-item"><div class="l">Bank</div><div class="v">${esc(u.bank_name||'—')}</div></div>
+      <div class="detail-item"><div class="l">Account No.</div><div class="v">${esc(u.account_number||'—')}</div></div>
+      <div class="detail-item"><div class="l">Account Holder</div><div class="v">${esc(u.account_holder||'—')}</div></div>
+    </div>
+    <h4 style="margin-top:14px;">💬 Message History (${msgs.length})</h4>
+    ${msgs.slice(0,10).map(m=>`<div class="msg-log"><div class="t">${esc(m.title||'—')}</div>${esc(m.content)}<div style="color:rgba(255,255,255,0.4);margin-top:3px;">${m.from_email} → ${m.to_email} · ${new Date(m.created_at).toLocaleString()}</div></div>`).join('') || '<div class="empty" style="padding:10px;">No messages.</div>'}
+    <h4 style="margin-top:14px;">💰 Balance Change Log (${logs.length})</h4>
+    ${logs.map(l=>`<div class="msg-log"><div class="t">${l.old_balance} → ${l.new_balance} (${l.amount>=0?'+':''}${l.amount})</div>By ${l.admin_email} · ${new Date(l.created_at).toLocaleString()}</div>`).join('') || '<div class="empty" style="padding:10px;">No changes yet.</div>'}
+  `;
+  showModal('User Details', html, () => {});
+  document.getElementById('modalConfirm').textContent = 'Close';
+};
+
+window.editBalance = function(email) {
+  showModal('Adjust Balance — ' + email, `
+    <label>Amount (use negative to deduct)</label>
+    <input type="number" id="balAmt" step="0.01" placeholder="100.00" />
+    <label>Note (optional)</label>
+    <input type="text" id="balNote" placeholder="Reason for adjustment" />
+  `, async () => {
+    const amount = parseFloat(document.getElementById('balAmt').value);
+    const note = document.getElementById('balNote').value;
+    if (!amount) { alert('Enter a valid amount'); return; }
+    const r = await adminCall('editBalance', email, { amount, note });
+    if (r.error) alert('❌ ' + r.error);
+    else { alert('✅ New balance: ' + r.newBalance.toFixed(2)); loadUsers(); }
+  });
+};
+
+window.toggleFreeze = async function(email, isFrozen) {
+  const r = await adminCall(isFrozen ? 'unfreeze' : 'freeze', email);
+  if (r.error) alert(r.error); else loadUsers();
+};
+
+window.sendTo = function(email) {
+  showModal('Send Message to ' + email, `
+    <label>Sender</label>
+    <select id="senderSel">
+      <option value="MRC">MRC</option>
+      <option value="MRC Customer Service">MRC Customer Service</option>
+      <option value="MRC Customer Care">MRC Customer Care</option>
+    </select>
+    <label>Title</label>
+    <input type="text" id="msgTitle" placeholder="e.g. Deposit Instructions" />
+    <label>Message</label>
+    <textarea id="msgBody" placeholder="Type message…"></textarea>
+    <label><input type="checkbox" id="allowRep" checked /> Allow user to reply</label>
+    <label><input type="checkbox" id="sendAll" /> Send to ALL users instead</label>
+  `, async () => {
+    const senderName = document.getElementById('senderSel').value;
+    const title = document.getElementById('msgTitle').value.trim();
+    const content = document.getElementById('msgBody').value.trim();
+    const allowReply = document.getElementById('allowRep').checked;
+    const all = document.getElementById('sendAll').checked;
+    if (!content) { alert('Enter a message'); return; }
+    const recipients = all ? 'all' : email;
+    const res = await fetch(API + '/send-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminEmail: ADMIN_EMAIL, recipients, title, content, senderName, allowReply })
+    });
+    const r = await res.json();
+    if (r.error) alert('❌ ' + r.error);
+    else { alert('✅ Message sent to ' + (all ? 'all users' : email)); }
+  });
+};
+
+// ============ DEPOSITS ============
+async function loadDeposits() {
+  const el = document.getElementById('depositsList');
+  const r = await adminCall('pendingDeposits');
+  if (r.error) { el.innerHTML = '<div class="empty" style="color:#ff5252">' + esc(r.error) + '</div>'; return; }
+  if (!r.length) { el.innerHTML = '<div class="empty">No pending deposits.</div>'; return; }
+  el.innerHTML = r.map(d => `
+    <div class="card">
+      <div class="email">${esc(d.user_email)}</div>
+      <div class="meta">Amount: $${d.amount.toFixed(2)} · Requested ${new Date(d.created_at).toLocaleString()}</div>
+      <div class="actions">
+        <button class="btn btn-success" onclick="completeDep('${d.id}','${esc(d.user_email)}',${d.amount})"><i class="fas fa-check"></i> Complete</button>
+        <button class="btn btn-primary" onclick="sendTo('${esc(d.user_email)}')"><i class="fas fa-envelope"></i> Send Instructions</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.completeDep = async function(id, userEmail, amount) {
+  if (!confirm('Mark deposit completed AND add $' + amount + ' to ' + userEmail + '?')) return;
+  const r = await adminCall('completeDeposit', null, { depositId: id });
+  if (r.error) { alert(r.error); return; }
+  // Also add the money
+  await adminCall('editBalance', userEmail, { amount, note: 'Deposit #' + id + ' completed' });
+  alert('✅ Deposit completed and balance updated.');
+  loadDeposits();
+};
+
+// ============ MESSAGES ============
+async function loadMessages() {
+  const el = document.getElementById('messagesList');
+  const r = await adminCall('getMessages');
+  if (r.error) { el.innerHTML = '<div class="empty" style="color:#ff5252">' + esc(r.error) + '</div>'; return; }
+  if (!r.length) { el.innerHTML = '<div class="empty">No messages yet.</div>'; return; }
+  el.innerHTML = r.map(m => {
+    const isAdminSent = m.from_email === 'admin@mrc.com';
+    const dir = isAdminSent ? '📤 → ' + esc(m.to_email) : '📥 from ' + esc(m.from_email);
+    return `
+      <div class="card">
+        <div class="email">${dir}</div>
+        <div class="meta"><strong>${esc(m.title||'—')}</strong><br>${esc(m.content)}<br>
+          ${esc(m.sender_display_name||'')} · ${new Date(m.created_at).toLocaleString()} · ${m.read_status?'✓ Read':'● Unread'}</div>
+        ${!isAdminSent ? `<div class="actions"><button class="btn btn-primary" onclick="sendTo('${esc(m.from_email)}')"><i class="fas fa-reply"></i> Reply</button></div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ============ LOGS ============
+async function loadLogs() {
+  const el = document.getElementById('logsList');
+  const [audit, bal] = await Promise.all([adminCall('getAuditLogs'), adminCall('getBalanceLogs')]);
+  let html = '<h3 style="margin-bottom:10px;">📜 Audit Log</h3>';
+  if (audit.error) html += '<div class="empty">' + audit.error + '</div>';
+  else if (!audit.length) html += '<div class="empty">No actions yet.</div>';
+  else html += audit.slice(0,50).map(l => `<div class="card"><div class="meta"><strong>${esc(l.action)}</strong> on ${esc(l.target_email||'—')} by ${esc(l.admin_email)}<br>${new Date(l.created_at).toLocaleString()}<br>${esc(JSON.stringify(l.details||{}))}</div></div>`).join('');
+
+  html += '<h3 style="margin:20px 0 10px;">💰 Balance Changes</h3>';
+  if (bal.error) html += '<div class="empty">' + bal.error + '</div>';
+  else if (!bal.length) html += '<div class="empty">No balance changes.</div>';
+  else html += bal.slice(0,50).map(l => `<div class="card"><div class="meta"><strong>${esc(l.user_email)}</strong>: ${l.old_balance} → ${l.new_balance} (${l.amount>=0?'+':''}${l.amount})<br>by ${esc(l.admin_email)} · ${new Date(l.created_at).toLocaleString()}</div></div>`).join('');
+
+  el.innerHTML = html;
+}
+
+document.getElementById('logout').addEventListener('click', () => {
+  sessionStorage.removeItem('mrc_admin');
+  location.reload();
+});
+
+loadUsers();
+</script>
+</body>
+</html>
