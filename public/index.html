@@ -32,7 +32,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .tagline { text-align:center; color:var(--muted); font-size:14px; margin-bottom:24px; }
 .input-group { margin-bottom:12px; }
 .input-group label { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:4px; }
-.input-group input, .input-group select, .input-group textarea { width:100%; padding:13px 15px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:14px; font-size:15px; color:var(--text); outline:none; font-family:'Inter',sans-serif; }
+.input-group input, .input-group select { width:100%; padding:13px 15px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:14px; font-size:15px; color:var(--text); outline:none; font-family:'Inter',sans-serif; }
 .btn { width:100%; padding:15px; border:none; border-radius:60px; font-weight:700; font-size:15px; cursor:pointer; font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:6px; }
 .btn:active { transform:scale(0.98); }
 .btn-primary { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; }
@@ -100,6 +100,29 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 .nav-item.active { color:var(--accent); }
 .desktop-nav { display:none; }
 @media (min-width:900px) { .bottom-nav { display:none; } .app-header { padding:16px 40px; } .app-body { padding:30px 40px; } #app.show { padding-bottom:0; } .desktop-nav { display:flex; gap:6px; } .desktop-nav button { background:transparent; border:none; color:var(--muted); font-weight:600; font-size:14px; padding:8px 16px; border-radius:12px; cursor:pointer; font-family:'Inter',sans-serif; } .desktop-nav button.active { background:var(--card); color:var(--accent); } .stats { grid-template-columns:repeat(3,1fr); } }
+.mrc-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.65); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; padding:20px; z-index:9999; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
+.mrc-modal-overlay.show { opacity:1; pointer-events:auto; }
+.mrc-modal { background:linear-gradient(160deg, rgba(30,35,60,0.98), rgba(20,23,40,0.98)); border:1px solid rgba(0,212,255,0.2); border-radius:28px; padding:28px 24px; max-width:420px; width:100%; box-shadow:0 30px 80px rgba(0,0,0,0.6); transform:scale(0.9) translateY(20px); transition:transform 0.4s cubic-bezier(0.22,1,0.36,1); position:relative; overflow:hidden; max-height:90vh; overflow-y:auto; }
+[data-theme="light"] .mrc-modal { background:linear-gradient(160deg, #ffffff, #f8fafc); border:1px solid #e2e8f0; }
+.mrc-modal-overlay.show .mrc-modal { transform:scale(1) translateY(0); }
+.mrc-modal-icon { width:64px; height:64px; border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:28px; }
+.mrc-modal-icon.gradient { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff; box-shadow:0 12px 40px rgba(0,212,255,0.35); }
+.mrc-modal-icon.success { background:rgba(0,200,83,0.15); color:var(--success); border:2px solid rgba(0,200,83,0.3); }
+.mrc-modal-icon.warn { background:rgba(255,145,0,0.15); color:var(--warn); border:2px solid rgba(255,145,0,0.3); }
+.mrc-modal-icon.danger { background:rgba(255,82,82,0.15); color:var(--danger); border:2px solid rgba(255,82,82,0.3); }
+.mrc-modal-title { font-size:20px; font-weight:800; text-align:center; margin-bottom:8px; }
+.mrc-modal-text { font-size:14px; color:var(--muted); text-align:center; line-height:1.6; margin-bottom:20px; }
+.mrc-modal-detail { background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.12); border-radius:14px; padding:14px 16px; margin-bottom:18px; }
+.mrc-modal-detail .row { display:flex; justify-content:space-between; font-size:13px; padding:4px 0; color:var(--text); }
+.mrc-modal-detail .row span:first-child { color:var(--muted); }
+.mrc-modal-detail .row span:last-child { font-weight:700; text-align:right; max-width:60%; }
+.mrc-modal-actions { display:flex; gap:10px; }
+.mrc-modal-actions .btn { margin-top:0; flex:1; }
+.mrc-modal-actions .btn-secondary { background:rgba(255,255,255,0.06); border:1px solid var(--input-border); color:var(--text); }
+.mrc-modal-close { position:absolute; top:14px; right:14px; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.06); border:none; color:var(--muted); font-size:14px; cursor:pointer; }
+.mrc-modal-input { width:100%; padding:14px 16px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:14px; font-size:16px; color:var(--text); outline:none; font-family:'Inter',sans-serif; text-align:center; font-weight:700; margin-bottom:16px; }
+.mrc-modal-spinner { width:44px; height:44px; border:3px solid rgba(0,212,255,0.15); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+@keyframes spin { to { transform:rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -126,7 +149,7 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
     <div id="signupFields" style="display:none;">
       <div class="input-group"><label>Full Name</label><input type="text" id="nameInput" placeholder="John Doe"></div>
       <div class="input-group"><label>Phone</label><input type="tel" id="phoneInput" placeholder="+234 800 000 0000"></div>
-      <div class="input-group"><label>Country</label><select id="countryInput"><option value="">Select country…</option><option>Nigeria</option><option>USA</option><option>United States</option><option>Canada</option><option>UK</option><option>United Kingdom</option><option>Ghana</option><option>Kenya</option><option>South Africa</option><option>India</option><option>Germany</option><option>France</option><option>Italy</option><option>Spain</option><option>Netherlands</option><option>Australia</option><option>Brazil</option><option>Japan</option><option>China</option><option>UAE</option><option>Egypt</option><option>Pakistan</option><option>Bangladesh</option><option>Philippines</option><option>Indonesia</option><option>Malaysia</option><option>Singapore</option></select></div>
+      <div class="input-group"><label>Country</label><select id="countryInput"><option value="">Select country…</option><option>Nigeria</option><option>USA</option><option>United States</option><option>Canada</option><option>UK</option><option>United Kingdom</option><option>Australia</option><option>Brazil</option><option>Germany</option><option>Portugal</option><option>Euro area</option><option>UAE</option><option>South Africa</option><option>India</option><option>Singapore</option><option>Ghana</option><option>Kenya</option></select></div>
       <div class="input-group"><label>Address</label><input type="text" id="addressInput" placeholder="123 Main Street, City"></div>
       <div class="input-group"><label>Bank Name</label><input type="text" id="bankInput" placeholder="Bank name"></div>
       <div class="input-group"><label>Account Number</label><input type="text" id="accountNumberInput" placeholder="0123456789"></div>
@@ -191,10 +214,11 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
 
     <div class="page" id="page-modes">
       <div class="section-title" style="font-size:20px;margin-bottom:14px;">📦 Available Modes</div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Access task packages by activating a Mode. Earnings come from completing tasks — not guaranteed investment returns.</p>
       <div id="modesList"></div>
       <div class="section-title" style="font-size:18px;margin:24px 0 12px;">💼 My Active Mode</div>
       <div id="myModeBox" class="info-card"></div>
+      <div class="section-title" style="font-size:18px;margin:24px 0 12px;">💵 Weekly Payout</div>
+      <div id="weeklyBox" class="info-card"></div>
       <div class="section-title" style="font-size:18px;margin:24px 0 12px;">📊 Today's Task Earnings</div>
       <div id="taskBox" class="info-card"></div>
       <div class="section-title" style="font-size:18px;margin:24px 0 12px;">🧾 Transaction History</div>
@@ -243,12 +267,77 @@ body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); 
   </nav>
 </div>
 
+<div class="mrc-modal-overlay" id="mrcModal">
+  <div class="mrc-modal" id="mrcModalBox"></div>
+</div>
+
 <script>
 const API = window.location.origin;
 let currentUser = null;
 let isLoginMode = true;
 
-// THEME
+const modalOverlay = document.getElementById('mrcModal');
+const modalBox = document.getElementById('mrcModalBox');
+
+function closeModal() { modalOverlay.classList.remove('show'); setTimeout(() => { modalBox.innerHTML = ''; }, 300); }
+
+function showModal({ icon, iconType = 'gradient', title, text, detailHTML, primaryText = 'OK', secondaryText = null, onPrimary, onSecondary, showClose = true, closable = true }) {
+  return new Promise(resolve => {
+    modalBox.innerHTML = `
+      ${showClose && closable ? '<button class="mrc-modal-close" id="mrcModalClose"><i class="fas fa-times"></i></button>' : ''}
+      ${icon ? `<div class="mrc-modal-icon ${iconType}"><i class="${icon}"></i></div>` : ''}
+      ${title ? `<div class="mrc-modal-title">${title}</div>` : ''}
+      ${text ? `<div class="mrc-modal-text">${text}</div>` : ''}
+      ${detailHTML ? `<div class="mrc-modal-detail">${detailHTML}</div>` : ''}
+      <div class="mrc-modal-actions">
+        ${secondaryText ? `<button class="btn btn-secondary" id="mrcModalSecondary">${secondaryText}</button>` : ''}
+        <button class="btn btn-primary" id="mrcModalPrimary">${primaryText}</button>
+      </div>`;
+    modalOverlay.classList.add('show');
+    const close = () => { closeModal(); resolve(null); };
+    if (closable) {
+      const cb = document.getElementById('mrcModalClose');
+      if (cb) cb.onclick = () => { close(); if (onSecondary) onSecondary(); };
+      modalOverlay.onclick = (e) => { if (e.target === modalOverlay) { close(); if (onSecondary) onSecondary(); } };
+    } else modalOverlay.onclick = null;
+    document.getElementById('mrcModalPrimary').onclick = () => {
+      const r = onPrimary ? onPrimary() : true;
+      if (r === false) return;
+      closeModal(); resolve(r === undefined ? true : r);
+    };
+    const sec = document.getElementById('mrcModalSecondary');
+    if (sec) sec.onclick = () => { closeModal(); if (onSecondary) onSecondary(); resolve(false); };
+  });
+}
+function mrcConfirm(opts) { return showModal({ ...opts, secondaryText: opts.secondaryText || 'Cancel', primaryText: opts.primaryText || 'Confirm' }); }
+function mrcAlert(opts) { return showModal({ ...opts, showClose: false, primaryText: opts.primaryText || 'Got it' }); }
+function mrcPrompt({ title, text, placeholder = '', value = '', type = 'number', icon = 'fas fa-keyboard', iconType = 'gradient' }) {
+  return new Promise(resolve => {
+    modalBox.innerHTML = `
+      <button class="mrc-modal-close" id="mrcModalClose"><i class="fas fa-times"></i></button>
+      <div class="mrc-modal-icon ${iconType}"><i class="${icon}"></i></div>
+      <div class="mrc-modal-title">${title}</div>
+      ${text ? `<div class="mrc-modal-text">${text}</div>` : ''}
+      <input class="mrc-modal-input" id="mrcModalInput" type="${type}" placeholder="${placeholder}" value="${value}" />
+      <div class="mrc-modal-actions">
+        <button class="btn btn-secondary" id="mrcModalSecondary">Cancel</button>
+        <button class="btn btn-primary" id="mrcModalPrimary">Confirm</button>
+      </div>`;
+    modalOverlay.classList.add('show');
+    const input = document.getElementById('mrcModalInput');
+    setTimeout(() => input.focus(), 300);
+    document.getElementById('mrcModalClose').onclick = () => { closeModal(); resolve(null); };
+    document.getElementById('mrcModalSecondary').onclick = () => { closeModal(); resolve(null); };
+    document.getElementById('mrcModalPrimary').onclick = () => { const v = input.value.trim(); closeModal(); resolve(v); };
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { const v = input.value.trim(); closeModal(); resolve(v); } });
+  });
+}
+function mrcLoading(title = 'Processing…', text = 'Please wait.') {
+  modalBox.innerHTML = `<div class="mrc-modal-spinner"></div><div class="mrc-modal-title">${title}</div><div class="mrc-modal-text">${text}</div>`;
+  modalOverlay.classList.add('show');
+  modalOverlay.onclick = null;
+}
+
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   const icon = document.querySelector('#themeToggle i');
@@ -257,18 +346,16 @@ function applyTheme(theme) {
   if (lbl) lbl.textContent = theme === 'dark' ? 'Dark' : 'Light';
   localStorage.setItem('mrc_theme', theme);
 }
-function initTheme() { applyTheme(localStorage.getItem('mrc_theme') || 'dark'); }
+applyTheme(localStorage.getItem('mrc_theme') || 'dark');
 function toggleTheme() {
   const cur = document.documentElement.getAttribute('data-theme') || 'dark';
   const next = cur === 'dark' ? 'light' : 'dark';
   applyTheme(next);
   if (currentUser) fetch(API + '/user/theme', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: currentUser.email, theme: next })}).catch(()=>{});
 }
-initTheme();
 document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 document.getElementById('profileThemeToggle').addEventListener('click', toggleTheme);
 
-// SLIDESHOW
 const slides = document.querySelectorAll('.slide');
 const dots = document.querySelectorAll('.dot');
 const nextBtn = document.getElementById('nextBtn');
@@ -282,19 +369,11 @@ function goSlide(i) {
 }
 dots.forEach(d => d.addEventListener('click', () => goSlide(parseInt(d.dataset.i))));
 nextBtn.addEventListener('click', () => {
-  if (slideIdx === slides.length - 1) {
-    document.getElementById('onboarding').classList.add('hide');
-    document.getElementById('authWrap').style.display = 'flex';
-    return;
-  }
+  if (slideIdx === slides.length - 1) { document.getElementById('onboarding').classList.add('hide'); document.getElementById('authWrap').style.display = 'flex'; return; }
   goSlide(slideIdx + 1);
 });
-skipBtn.addEventListener('click', () => {
-  document.getElementById('onboarding').classList.add('hide');
-  document.getElementById('authWrap').style.display = 'flex';
-});
+skipBtn.addEventListener('click', () => { document.getElementById('onboarding').classList.add('hide'); document.getElementById('authWrap').style.display = 'flex'; });
 
-// AUTH
 const emailInput = document.getElementById('emailInput');
 const passwordInput = document.getElementById('passwordInput');
 const nameInput = document.getElementById('nameInput');
@@ -333,7 +412,6 @@ async function handleAuth() {
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
   if (!email || !password) { showError('Email and password required'); return; }
-
   if (isLoginMode) {
     const r = await apiCall('/login', { email, password });
     if (r.error) { showError('❌ ' + r.error); return; }
@@ -362,7 +440,6 @@ authBtn.addEventListener('click', handleAuth);
 toggleBtn.addEventListener('click', () => setMode(!isLoginMode));
 document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('authWrap').style.display !== 'none') handleAuth(); });
 
-// APP
 function enterApp(user) {
   currentUser = user;
   sessionStorage.setItem('mrc_session', user.email);
@@ -395,7 +472,6 @@ function renderUser(u) {
   document.getElementById('pAcctHolder').textContent = u.account_holder || '—';
 }
 
-// PAGE SWITCH
 function switchPage(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
@@ -407,7 +483,6 @@ function switchPage(page) {
 document.querySelectorAll('.nav-item').forEach(n => n.addEventListener('click', () => switchPage(n.dataset.page)));
 document.querySelectorAll('#desktopNav button').forEach(b => b.addEventListener('click', () => switchPage(b.dataset.page)));
 
-// MESSAGES
 async function loadMessages() {
   if (!currentUser) return;
   const res = await fetch(API + '/messages/' + encodeURIComponent(currentUser.email));
@@ -420,14 +495,13 @@ async function loadMessages() {
     return `<div class="message-item ${unread?'unread':''}" onclick="markRead('${m.id}')">
       <div class="head"><div class="title">${unread?'<span class="unread-dot"></span>':''}${escape(m.title||'Message from MRC')}</div><div class="date">${new Date(m.created_at).toLocaleString()}</div></div>
       <div class="from"><i class="fas fa-user-shield"></i> ${escape(m.sender_display_name||'MRC')}</div>
-      <div class="body">${escape(m.content)}</div>
+      <div class="body">${escape(m.content).replace(/\n/g,'<br>')}</div>
       ${canReply?`<div class="reply-zone"><input id="reply-${m.id}" placeholder="Write a reply…" /><button onclick="event.stopPropagation();sendReply('${m.id}')">Send</button></div>`:''}
     </div>`;
   };
   document.getElementById('messagesList').innerHTML = incoming.length === 0 ? '<div class="message-item" style="text-align:center;color:var(--muted);">No messages yet.</div>' : incoming.map(render).join('');
   document.getElementById('homeMessages').innerHTML = incoming.length === 0 ? '<div class="message-item" style="text-align:center;color:var(--muted);">No messages yet.</div>' : incoming.slice(0,3).map(render).join('');
 }
-
 window.markRead = async function(id) {
   if (!currentUser) return;
   await fetch(API + '/messages/mark-read', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: currentUser.email, messageId: id })});
@@ -438,11 +512,11 @@ window.sendReply = async function(parentId) {
   const content = input.value.trim();
   if (!content) return;
   const r = await apiCall('/reply-message', { fromEmail: currentUser.email, parentId, content });
-  if (r.error) alert(r.error); else { input.value = ''; loadMessages(); }
+  if (r.error) mrcAlert({ icon:'fas fa-exclamation-triangle', iconType:'danger', title:'Reply failed', text:r.error });
+  else { input.value = ''; loadMessages(); }
 };
 function escape(s) { return String(s||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
 
-// CHART
 async function loadBalanceChart() {
   if (!currentUser) return;
   const current = currentUser.balance || 0;
@@ -451,8 +525,7 @@ async function loadBalanceChart() {
 }
 function drawChart(values) {
   const w = 400, h = 150, pad = 10;
-  const max = Math.max(...values, 1);
-  const min = Math.min(...values, 0);
+  const max = Math.max(...values, 1), min = Math.min(...values, 0);
   const range = max - min || 1;
   const step = (w - pad * 2) / (values.length - 1);
   const pts = values.map((v,i) => [pad + i*step, h - pad - ((v-min)/range)*(h-pad*2)]);
@@ -462,17 +535,19 @@ function drawChart(values) {
   document.getElementById('chartArea').setAttribute('d', area);
 }
 
-// MODES
 async function loadModes() {
-  const res = await fetch(API + '/modes');
+  if (!currentUser) return;
+  const country = currentUser.country || '';
+  const res = await fetch(API + '/modes?country=' + encodeURIComponent(country));
   const modes = await res.json();
   const el = document.getElementById('modesList');
-  if (!Array.isArray(modes) || modes.length === 0) { el.innerHTML = '<div class="message-item" style="text-align:center;color:var(--muted);">No modes available yet.</div>'; return; }
+  if (!Array.isArray(modes) || modes.length === 0) {
+    el.innerHTML = '<div class="message-item" style="text-align:center;color:var(--muted);">No modes available for your country yet.</div>';
+    return;
+  }
   el.innerHTML = modes.map(m => {
     const dailyMax = m.tasks_per_day * m.reward_per_task;
     const months = m.duration_months || 12;
-    const days = months * 30;
-    const estTotal = dailyMax * days;
     return `<div class="info-card">
       <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:10px;">
         <div><div style="font-weight:800;font-size:17px;">${m.name}</div><div style="color:var(--muted);font-size:12px;margin-top:2px;">${m.description||''}</div></div>
@@ -482,24 +557,70 @@ async function loadModes() {
         <div style="font-weight:700;font-size:13px;margin-bottom:8px;">💰 Earnings Breakdown</div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Tasks per day</span><strong>${m.tasks_per_day}</strong></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Reward per task</span><strong>${m.currency_symbol}${m.reward_per_task.toLocaleString()}</strong></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px dashed var(--card-border);margin-top:6px;padding-top:8px;"><span style="color:var(--muted);">Max daily task earnings</span><strong style="color:var(--success);">${m.currency_symbol}${dailyMax.toLocaleString()}</strong></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-top:1px dashed var(--card-border);margin-top:6px;padding-top:8px;"><span style="color:var(--muted);">Max daily earnings</span><strong style="color:var(--success);">${m.currency_symbol}${dailyMax.toLocaleString()}</strong></div>
         <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Duration</span><strong>${months} months</strong></div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Est. total (all tasks)</span><strong style="color:var(--warn);">${m.currency_symbol}${estTotal.toLocaleString()}</strong></div>
       </div>
-      <p style="font-size:11px;color:var(--muted);line-height:1.5;margin:8px 0;">ⓘ Estimated earnings are based on completing all available tasks. Actual earnings depend on task availability. <strong>Not a guaranteed investment return.</strong></p>
-      <button class="btn btn-primary" style="margin-top:6px;" onclick="activateMode('${m.id}','${m.name.replace(/'/g,'')}')"><i class="fas fa-bolt"></i> Activate for ${m.currency_symbol}${m.access_amount.toLocaleString()}</button>
+      <button class="btn btn-primary" style="margin-top:6px;" onclick="activateMode('${m.id}','${m.name.replace(/'/g,'')}','${m.currency_symbol}','${m.access_amount}','${m.tasks_per_day}','${m.reward_per_task}','${months}')"><i class="fas fa-paper-plane"></i> Activate and Send</button>
     </div>`;
   }).join('');
 }
 
-window.activateMode = async function(modeId, modeName) {
+window.activateMode = async function(modeId, modeName, sym, amount, tasksPerDay, reward, months) {
   if (!currentUser) return;
-  if (!confirm(`Activate ${modeName}?\n\nYou will be prompted to complete payment. Once confirmed, the mode will be activated.`)) return;
+  const accessAmount = parseFloat(amount);
+  const currentBalance = currentUser.balance || 0;
+  const newBalance = currentBalance - accessAmount;
+  const sufficient = currentBalance >= accessAmount;
+
+  const detailHTML = `
+    <div class="row"><span>Mode</span><span>${modeName}</span></div>
+    <div class="row"><span>Access amount</span><span>${sym}${accessAmount.toLocaleString()}</span></div>
+    <div class="row"><span>Current balance</span><span>${sym}${currentBalance.toLocaleString()}</span></div>
+    <div class="row" style="border-top:1px dashed rgba(255,255,255,0.1); margin-top:4px; padding-top:8px;">
+      <span>Balance after</span>
+      <span style="color:${sufficient ? 'var(--success)' : 'var(--danger)'};">${sym}${Math.max(0, newBalance).toLocaleString()}</span>
+    </div>
+    <div class="row"><span>Duration</span><span>${months} months</span></div>`;
+
+  const confirmed = await mrcConfirm({
+    icon: sufficient ? 'fas fa-bolt' : 'fas fa-exclamation-triangle',
+    iconType: sufficient ? 'gradient' : 'danger',
+    title: sufficient ? 'Activate and Send?' : 'Insufficient Balance',
+    text: sufficient
+      ? `<strong>${sym}${accessAmount.toLocaleString()}</strong> will be deducted and sent for activation of <strong>${modeName}</strong>.`
+      : `You need <strong>${sym}${accessAmount.toLocaleString()}</strong> but only have <strong>${sym}${currentBalance.toLocaleString()}</strong>. Please deposit first.`,
+    detailHTML,
+    primaryText: sufficient ? 'Activate and Send' : 'Deposit Now',
+    secondaryText: 'Cancel'
+  });
+  if (!confirmed) return;
+  if (!sufficient) {
+    switchPage('home');
+    setTimeout(() => document.getElementById('depositBtn').click(), 400);
+    return;
+  }
+
+  mrcLoading('Sending…', 'Verifying balance and creating your activation request.');
   const r = await fetch(API + '/activate-mode', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: currentUser.email, modeId })});
   const data = await r.json();
-  if (data.error) { alert('❌ ' + data.error); return; }
-  alert('✅ ' + data.message + '\n\nReference: ' + data.reference + '\nStatus: ' + data.status);
-  loadUserMode(); loadTransactions();
+  if (data.error) return mrcAlert({ icon:'fas fa-exclamation-triangle', iconType:'danger', title:'Activation Failed', text: data.error });
+
+  currentUser.balance = data.newBalance;
+  renderUser(currentUser);
+
+  await mrcAlert({
+    icon: 'fas fa-hourglass-half', iconType: 'warn',
+    title: 'Sent for Processing',
+    text: data.message,
+    detailHTML: `
+      <div class="row"><span>Mode</span><span>${modeName}</span></div>
+      <div class="row"><span>Amount</span><span>${sym}${accessAmount.toLocaleString()}</span></div>
+      <div class="row"><span>New balance</span><span>${sym}${data.newBalance.toLocaleString()}</span></div>
+      <div class="row"><span>Reference</span><span style="font-size:11px;">${data.reference}</span></div>
+      <div class="row"><span>Status</span><span style="color:var(--warn);">${data.status}</span></div>`,
+    primaryText: 'Got it'
+  });
+  loadUserMode(); loadTransactions(); loadMessages(); loadBalanceChart();
 };
 
 async function loadUserMode() {
@@ -508,40 +629,70 @@ async function loadUserMode() {
   const um = await res.json();
   const box = document.getElementById('myModeBox');
   const taskBox = document.getElementById('taskBox');
-  if (!um || !um.modes) { box.innerHTML = '<p style="color:var(--muted);font-size:13px;">No active mode. Choose one above.</p>'; taskBox.innerHTML = '<p style="color:var(--muted);font-size:13px;">—</p>'; return; }
+  const weeklyBox = document.getElementById('weeklyBox');
+  if (!um || !um.modes) {
+    box.innerHTML = '<p style="color:var(--muted);font-size:13px;">No active mode.</p>';
+    taskBox.innerHTML = '<p style="color:var(--muted);font-size:13px;">—</p>';
+    weeklyBox.innerHTML = '<p style="color:var(--muted);font-size:13px;">—</p>';
+    return;
+  }
   const m = um.modes;
-  const statusColor = um.status === 'COMPLETED' ? 'var(--success)' : um.status === 'FAILED' ? 'var(--danger)' : 'var(--warn)';
-  box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;">
+  const statusColors = { COMPLETED: 'var(--success)', FAILED: 'var(--danger)', PROCESSING: 'var(--warn)', PENDING: 'var(--warn)' };
+  const statusColor = statusColors[um.status] || 'var(--muted)';
+  const statusLabel = um.status === 'COMPLETED' ? 'ACTIVE' : um.status;
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;">
       <div><div style="font-weight:800;font-size:16px;">${m.name}</div><div style="font-size:12px;color:var(--muted);margin-top:2px;">Access: ${m.currency_symbol}${m.access_amount.toLocaleString()}</div></div>
-      <span style="background:${statusColor};color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;">${um.status}</span>
+      <span style="background:${statusColor};color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;">${statusLabel}</span>
     </div>
-    ${um.status === 'PROCESSING' || um.status === 'PENDING' ? `<p style="margin-top:10px;font-size:12px;color:var(--muted);">Your payment is being processed. It may take up to 8 hours to reflect.</p>` : ''}
-    ${um.status === 'COMPLETED' ? `<div style="margin-top:10px;font-size:12px;color:var(--muted);">Activated: ${new Date(um.activated_at).toLocaleDateString()}<br>Expires: ${um.expires_at ? new Date(um.expires_at).toLocaleDateString() : '—'}</div><button class="btn btn-success" style="margin-top:12px;" onclick="completeTasks()"><i class="fas fa-check"></i> Complete Today's Tasks</button>` : ''}`;
+    ${um.status === 'PROCESSING' || um.status === 'PENDING' ? `<div style="margin-top:12px;padding:12px;background:rgba(255,145,0,0.08);border-radius:12px;border-left:3px solid var(--warn);"><div style="font-size:12px;color:var(--warn);font-weight:700;margin-bottom:4px;"><i class="fas fa-hourglass-half"></i> Processing</div><div style="font-size:12px;color:var(--muted);line-height:1.5;">Your payment is being processed. It may take up to 8 hours to reflect.</div></div>` : ''}
+    ${um.status === 'COMPLETED' ? `<div style="margin-top:10px;font-size:12px;color:var(--muted);"><div>Activated: ${new Date(um.activated_at).toLocaleString()}</div><div>Expires: ${um.expires_at ? new Date(um.expires_at).toLocaleString() : '—'}</div></div><button class="btn btn-success" style="margin-top:12px;" onclick="completeTasks()"><i class="fas fa-check"></i> Complete Today's Tasks</button>` : ''}
+    ${um.status === 'FAILED' ? `<div style="margin-top:12px;padding:12px;background:rgba(255,82,82,0.08);border-radius:12px;border-left:3px solid var(--danger);"><div style="font-size:12px;color:var(--danger);font-weight:700;"><i class="fas fa-times-circle"></i> Activation Failed — Refunded</div></div>` : ''}`;
+
   if (um.status === 'COMPLETED') {
-    const tr = await fetch(API + '/task-progress/' + encodeURIComponent(currentUser.email) + '/' + m.id);
-    const tp = await tr.json();
-    const done = tp.tasks_completed || 0;
-    const remaining = m.tasks_per_day - done;
-    taskBox.innerHTML = `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Tasks today</span><strong>${done} / ${m.tasks_per_day}</strong></div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Earned today</span><strong style="color:var(--success);">${m.currency_symbol}${(tp.earnings||0).toLocaleString()}</strong></div>
-      <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;"><span style="color:var(--muted);">Remaining</span><strong>${remaining}</strong></div>`;
-  } else { taskBox.innerHTML = '<p style="color:var(--muted);font-size:13px;">Available after activation.</p>'; }
+    const ws = await (await fetch(API + '/weekly-status/' + encodeURIComponent(currentUser.email))).json();
+    const weekly = ws?.weeklyAmount || 0;
+    const totalPaid = ws?.totalPaidOut || 0;
+    const nextDate = ws?.nextPayoutAt ? new Date(ws.nextPayoutAt).toLocaleDateString() : '—';
+    weeklyBox.innerHTML = `
+      <div class="info-row"><span>Weekly payout</span><span style="color:var(--success);font-weight:800;">${m.currency_symbol}${weekly.toLocaleString()}</span></div>
+      <div class="info-row"><span>Next payout</span><span>${nextDate}</span></div>
+      <div class="info-row"><span>Total received</span><span>${m.currency_symbol}${totalPaid.toLocaleString()}</span></div>`;
+  } else weeklyBox.innerHTML = '<p style="color:var(--muted);font-size:13px;">Available after activation.</p>';
+
+  if (um.status === 'COMPLETED') {
+    const done = um.tasksDoneToday || 0;
+    const remaining = Math.max(0, m.tasks_per_day - done);
+    const todayEarnings = um.todayEarnings || 0;
+    taskBox.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;"><span style="color:var(--muted);">Tasks today</span><strong>${done} / ${m.tasks_per_day}</strong></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;"><span style="color:var(--muted);">Reward per task</span><strong>${m.currency_symbol}${m.reward_per_task.toLocaleString()}</strong></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px dashed var(--card-border);margin-top:6px;padding-top:8px;"><span style="color:var(--muted);">Earned today</span><strong style="color:var(--success);">${m.currency_symbol}${todayEarnings.toLocaleString()}</strong></div>`;
+  } else taskBox.innerHTML = '<p style="color:var(--muted);font-size:13px;">Unlocks after activation.</p>';
 }
 
 window.completeTasks = async function() {
   if (!currentUser) return;
   const um = await (await fetch(API + '/user-mode/' + encodeURIComponent(currentUser.email))).json();
-  if (!um || !um.modes) return alert('No active mode');
+  if (!um || !um.modes) return mrcAlert({ icon:'fas fa-exclamation-triangle', iconType:'danger', title:'No active mode', text:'Please activate a mode first.' });
   const m = um.modes;
-  const count = parseInt(prompt(`How many tasks to complete? (max ${m.tasks_per_day})`, '1'));
+  const val = await mrcPrompt({ icon:'fas fa-list-check', iconType:'gradient', title:'Complete Tasks', text:`How many tasks today? (Max: ${m.tasks_per_day})`, placeholder:'1', value:'1' });
+  if (val === null) return;
+  const count = parseInt(val);
   if (!count || count < 1) return;
+  mrcLoading('Processing…', 'Recording your task completion.');
   const r = await fetch(API + '/complete-task', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email: currentUser.email, modeId: m.id, tasks: count })});
   const data = await r.json();
-  if (data.error) return alert('❌ ' + data.error);
-  alert(`✅ Earned ${m.currency_symbol}${data.earnings.toLocaleString()}\nNew balance: ${m.currency_symbol}${data.newBalance.toLocaleString()}`);
+  if (data.error) return mrcAlert({ icon:'fas fa-exclamation-triangle', iconType:'danger', title:'Task failed', text: data.error });
+  await mrcAlert({
+    icon:'fas fa-check-circle', iconType:'success', title:'Tasks Completed!',
+    text:'You earned today. Keep it up!',
+    detailHTML:`<div class="row"><span>Earned</span><span style="color:var(--success);">${m.currency_symbol}${data.earnings.toLocaleString()}</span></div><div class="row"><span>New balance</span><span>${m.currency_symbol}${data.newBalance.toLocaleString()}</span></div>`,
+    primaryText:'Nice!'
+  });
   const fresh = await (await fetch(API + '/user/' + encodeURIComponent(currentUser.email))).json();
   currentUser.balance = fresh.balance;
-  renderUser(currentUser); loadUserMode(); loadTransactions();
+  renderUser(currentUser); loadUserMode(); loadTransactions(); loadBalanceChart();
 };
 
 async function loadTransactions() {
@@ -552,27 +703,33 @@ async function loadTransactions() {
   if (!Array.isArray(list) || !list.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;">No transactions yet.</p>'; return; }
   el.innerHTML = list.slice(0,20).map(t => {
     const color = t.status === 'COMPLETED' ? 'var(--success)' : t.status === 'FAILED' ? 'var(--danger)' : 'var(--warn)';
-    return `<div class="message-item">
-      <div class="head"><div class="title">${t.type.replace('_',' ').toUpperCase()}</div><div class="date" style="color:${color};font-weight:700;">${t.status}</div></div>
-      <div class="body">${t.currency_symbol||''}${t.amount.toLocaleString()} · ${new Date(t.created_at).toLocaleString()}</div>
-      ${t.reference?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">Ref: ${t.reference}</div>`:''}
-    </div>`;
+    return `<div class="message-item"><div class="head"><div class="title">${t.type.replace('_',' ').toUpperCase()}</div><div class="date" style="color:${color};font-weight:700;">${t.status}</div></div><div class="body">${t.currency_symbol||''}${t.amount.toLocaleString()} · ${new Date(t.created_at).toLocaleString()}</div>${t.reference?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">Ref: ${t.reference}</div>`:''}</div>`;
   }).join('');
 }
 
-// DEPOSIT / WITHDRAW
 document.getElementById('depositBtn').addEventListener('click', async () => {
   if (!currentUser) return;
-  const amount = parseFloat(prompt('💰 Enter deposit amount:', '100'));
-  if (!amount || amount <= 0) return;
+  const sym = currentUser.currency_symbol || '$';
+  const val = await mrcPrompt({ icon:'fas fa-plus-circle', iconType:'gradient', title:'Deposit Funds', text:`Enter amount to deposit (${sym}).`, placeholder:'100', value:'100' });
+  if (val === null) return;
+  const amount = parseFloat(val);
+  if (!amount || amount <= 0) return mrcAlert({ icon:'fas fa-exclamation-triangle', iconType:'danger', title:'Invalid amount', text:'Please enter a positive number.' });
+  mrcLoading('Sending request…', 'Forwarding your deposit request.');
   const r = await apiCall('/request-deposit', { email: currentUser.email, amount });
-  if (r.error) alert('❌ ' + r.error); else alert('✅ Deposit request sent. You will receive instructions shortly.');
+  if (r.error) return mrcAlert({ icon:'fas fa-exclamation-triangle', iconType:'danger', title:'Deposit failed', text: r.error });
+  await mrcAlert({ icon:'fas fa-check-circle', iconType:'success', title:'Deposit Request Sent', text:'You will receive payment instructions in your inbox shortly.', primaryText:'Got it' });
+  loadMessages();
 });
-document.getElementById('withdrawBtn').addEventListener('click', () => alert('💸 To withdraw, please contact MRC support.'));
 
-document.getElementById('logoutBtn').addEventListener('click', () => { sessionStorage.removeItem('mrc_session'); location.reload(); });
+document.getElementById('withdrawBtn').addEventListener('click', () => {
+  mrcAlert({ icon:'fas fa-headset', iconType:'gradient', title:'Contact Support', text:'To withdraw, please send a message to MRC support from the Messages tab.', primaryText:'Go to Messages', onPrimary: () => switchPage('messages') });
+});
 
-// SESSION RESTORE
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  const ok = await mrcConfirm({ icon:'fas fa-sign-out-alt', iconType:'warn', title:'Log out?', text:'You will need to sign in again.', primaryText:'Log Out', secondaryText:'Cancel' });
+  if (ok) { sessionStorage.removeItem('mrc_session'); location.reload(); }
+});
+
 (async () => {
   const saved = sessionStorage.getItem('mrc_session');
   if (saved) {
