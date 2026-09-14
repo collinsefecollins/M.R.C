@@ -49,12 +49,13 @@ h1 { font-size:28px; font-weight:900; } h1 span { color:#00d4ff; }
 <body>
 <div class="container">
   <h1>🔐 M<span>R</span>C <span class="badge">Admin</span></h1>
-  <div class="sub">Server-protected admin panel. Every action is logged.</div>
+  <div class="sub">Server-protected admin panel.</div>
 
   <div class="flex-row">
     <div class="tabs">
       <button class="active" data-tab="users">👥 Users</button>
       <button data-tab="modes">📦 Modes</button>
+      <button data-tab="payouts">💵 Payouts</button>
       <button data-tab="deposits">💰 Deposits</button>
       <button data-tab="messages">📩 Messages</button>
       <button data-tab="logs">📜 Logs</button>
@@ -64,11 +65,14 @@ h1 { font-size:28px; font-weight:900; } h1 span { color:#00d4ff; }
 
   <div id="sec-users" class="section active"><div id="usersList"><div class="empty">Loading…</div></div></div>
   <div id="sec-modes" class="section">
-    <div style="margin-bottom:16px;"><button class="btn btn-primary" onclick="createMode()"><i class="fas fa-plus"></i> Create Mode</button></div>
     <h3 style="margin-bottom:10px;">Pending Activations</h3>
     <div id="pendingModesList"><div class="empty">Loading…</div></div>
     <h3 style="margin:20px 0 10px;">All Modes</h3>
     <div id="allModesList"><div class="empty">Loading…</div></div>
+  </div>
+  <div id="sec-payouts" class="section">
+    <h3 style="margin-bottom:10px;">Active Modes — Weekly Payouts</h3>
+    <div id="payoutsList"><div class="empty">Loading…</div></div>
   </div>
   <div id="sec-deposits" class="section"><div id="depositsList"><div class="empty">Loading…</div></div></div>
   <div id="sec-messages" class="section"><div id="messagesList"><div class="empty">Loading…</div></div></div>
@@ -116,6 +120,7 @@ document.querySelectorAll('.tabs button').forEach(b => {
     document.getElementById('sec-' + b.dataset.tab).classList.add('active');
     if (b.dataset.tab === 'users') loadUsers();
     if (b.dataset.tab === 'modes') { loadAllModes(); loadPendingModes(); }
+    if (b.dataset.tab === 'payouts') loadPayouts();
     if (b.dataset.tab === 'deposits') loadDeposits();
     if (b.dataset.tab === 'messages') loadMessages();
     if (b.dataset.tab === 'logs') loadLogs();
@@ -153,7 +158,6 @@ window.viewUser = async function(email) {
     <div class="detail-item"><div class="l">Currency</div><div class="v">${esc(u.currency_symbol||'$')} ${esc(u.currency_code||'USD')}</div></div>
     <div class="detail-item"><div class="l">Balance</div><div class="v">${esc(u.currency_symbol||'$')}${(u.balance||0).toFixed(2)}</div></div>
     <div class="detail-item"><div class="l">Status</div><div class="v">${u.frozen?'❄️ Frozen':'✅ Active'}</div></div>
-    <div class="detail-item"><div class="l">Registered</div><div class="v">${u.created_at?new Date(u.created_at).toLocaleString():'—'}</div></div>
     <div class="detail-item"><div class="l">Bank</div><div class="v">${esc(u.bank_name||'—')}</div></div>
     <div class="detail-item"><div class="l">Account No.</div><div class="v">${esc(u.account_number||'—')}</div></div>
     <div class="detail-item"><div class="l">Account Holder</div><div class="v">${esc(u.account_holder||'—')}</div></div>
@@ -175,7 +179,7 @@ window.editBalance = function(email) {
   `, async () => {
     const amount = parseFloat(document.getElementById('balAmt').value);
     const note = document.getElementById('balNote').value;
-    if (!amount) { alert('Enter a valid amount'); return; }
+    if (!amount) { alert('Enter valid amount'); return; }
     const r = await adminCall('editBalance', email, { amount, note });
     if (r.error) alert('❌ ' + r.error); else { alert('✅ New balance: ' + r.newBalance.toFixed(2)); loadUsers(); }
   });
@@ -216,12 +220,11 @@ async function loadDeposits() {
 }
 
 window.completeDep = async function(id, userEmail, amount) {
-  if (!confirm(`Mark deposit completed AND add $${amount} to ${userEmail}?`)) return;
+  if (!confirm(`Mark completed AND add $${amount} to ${userEmail}?`)) return;
   const r = await adminCall('completeDeposit', null, { depositId: id });
   if (r.error) { alert(r.error); return; }
-  await adminCall('editBalance', userEmail, { amount, note: 'Deposit #' + id + ' completed' });
-  alert('✅ Deposit completed and balance updated.');
-  loadDeposits();
+  await adminCall('editBalance', userEmail, { amount, note: 'Deposit completed' });
+  alert('✅ Deposit completed.'); loadDeposits();
 };
 
 async function loadMessages() {
@@ -250,7 +253,6 @@ async function loadLogs() {
   el.innerHTML = html;
 }
 
-// MODES ADMIN
 async function loadAllModes() {
   const r = await adminCall('listModes');
   const el = document.getElementById('allModesList');
@@ -258,8 +260,7 @@ async function loadAllModes() {
   el.innerHTML = r.map(m => `<div class="card">
       <div class="email">${esc(m.name)} <span style="font-size:11px;color:${m.is_active?'#00c853':'#ff5252'};">${m.is_active?'ACTIVE':'INACTIVE'}</span></div>
       <div class="meta">Access: ${m.currency_symbol}${m.access_amount} · Tasks/day: ${m.tasks_per_day} · Reward: ${m.currency_symbol}${m.reward_per_task} · Duration: ${m.duration_months} months</div>
-      <div class="actions"><button class="btn btn-danger" onclick="deleteMode('${m.id}')"><i class="fas fa-trash"></i> Delete</button></div>
-    </div>`).join('');
+      <div class="actions"><button class="btn btn-danger" onclick="deleteMode('${m.id}')"><i class="fas fa-trash"></i> Delete</button></div></div>`).join('');
 }
 
 async function loadPendingModes() {
@@ -270,35 +271,22 @@ async function loadPendingModes() {
       <div class="email">${esc(p.user_email)} — ${esc(p.modes?.name||'')}</div>
       <div class="meta">Amount: ${p.modes?.currency_symbol||''}${p.modes?.access_amount} · Status: <strong>${p.status}</strong> · ${new Date(p.created_at).toLocaleString()}</div>
       <div class="actions">
-        <button class="btn btn-success" onclick="approveMode('${p.id}')"><i class="fas fa-check"></i> Approve</button>
-        <button class="btn btn-danger" onclick="rejectMode('${p.id}')"><i class="fas fa-times"></i> Reject</button>
+        <button class="btn btn-success" onclick="approveMode('${p.id}')"><i class="fas fa-check"></i> Approve + Set Weekly</button>
+        <button class="btn btn-danger" onclick="rejectMode('${p.id}')"><i class="fas fa-times"></i> Reject + Refund</button>
       </div></div>`).join('');
 }
 
-window.createMode = function() {
-  showModal('Create Mode', `
-    <label>Name</label><input type="text" id="mName" placeholder="Mode 1" />
-    <label>Description</label><input type="text" id="mDesc" placeholder="Starter package" />
-    <label>Access Amount</label><input type="number" id="mAmount" placeholder="30000" />
-    <label>Currency Code</label><input type="text" id="mCurCode" value="NGN" />
-    <label>Currency Symbol</label><input type="text" id="mCurSym" value="₦" />
-    <label>Tasks Per Day</label><input type="number" id="mTasks" value="5" />
-    <label>Reward Per Task</label><input type="number" id="mReward" value="200" />
-    <label>Duration (months)</label><input type="number" id="mDuration" value="12" />
-  `, async () => {
-    const data = {
-      name: document.getElementById('mName').value,
-      description: document.getElementById('mDesc').value,
-      access_amount: parseFloat(document.getElementById('mAmount').value),
-      currency_code: document.getElementById('mCurCode').value,
-      currency_symbol: document.getElementById('mCurSym').value,
-      tasks_per_day: parseInt(document.getElementById('mTasks').value),
-      reward_per_task: parseFloat(document.getElementById('mReward').value),
-      duration_months: parseInt(document.getElementById('mDuration').value)
-    };
-    const r = await adminCall('createMode', null, data);
-    if (r.error) alert(r.error); else { alert('✅ Mode created'); loadAllModes(); }
-  });
+window.approveMode = async function(userModeId) {
+  const amt = prompt('Weekly payout amount for this user (in their currency):', '1000');
+  if (amt === null) return;
+  const r = await adminCall('approveMode', null, { userModeId, weeklyAmount: parseFloat(amt) || 0 });
+  if (r.error) alert(r.error); else { alert('✅ Mode activated'); loadPendingModes(); loadAllModes(); }
+};
+
+window.rejectMode = async function(userModeId) {
+  if (!confirm('Reject this activation? The user will be refunded.')) return;
+  const r = await adminCall('rejectMode', null, { userModeId });
+  if (r.error) alert(r.error); else { alert('❌ Rejected & refunded'); loadPendingModes(); }
 };
 
 window.deleteMode = async function(id) {
@@ -307,16 +295,37 @@ window.deleteMode = async function(id) {
   if (r.error) alert(r.error); else loadAllModes();
 };
 
-window.approveMode = async function(userModeId) {
-  if (!confirm('Approve this mode activation?')) return;
-  const r = await adminCall('approveMode', null, { userModeId });
-  if (r.error) alert(r.error); else { alert('✅ Mode activated'); loadPendingModes(); loadAllModes(); }
+async function loadPayouts() {
+  const el = document.getElementById('payoutsList');
+  const r = await adminCall('activeModes');
+  if (r.error || !Array.isArray(r) || !r.length) { el.innerHTML = '<div class="empty">No active modes.</div>'; return; }
+  el.innerHTML = r.map(u => `<div class="card">
+      <div class="email">${esc(u.user_email)} — ${esc(u.modes?.name||'')}</div>
+      <div class="meta">
+        Access: ${u.modes?.currency_symbol||''}${u.modes?.access_amount}<br>
+        Weekly payout: <strong style="color:#00c853;">${u.modes?.currency_symbol||''}${(u.weekly_payout_amount||0).toLocaleString()}</strong><br>
+        Total paid: ${u.modes?.currency_symbol||''}${(u.total_paid_out||0).toLocaleString()}<br>
+        Last payout: ${u.last_payout_at?new Date(u.last_payout_at).toLocaleDateString():'—'}<br>
+        Next payout: ${u.next_payout_at?new Date(u.next_payout_at).toLocaleDateString():'—'}
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" onclick="setWeekly('${u.id}',${u.weekly_payout_amount||0})"><i class="fas fa-edit"></i> Set Amount</button>
+        <button class="btn btn-success" onclick="sendWeekly('${u.id}','${esc(u.user_email)}')"><i class="fas fa-paper-plane"></i> Send Payout</button>
+      </div></div>`).join('');
+}
+
+window.setWeekly = function(id, current) {
+  showModal('Set Weekly Payout', `<label>Weekly amount</label><input type="number" id="wkAmt" value="${current}" step="0.01" />`, async () => {
+    const amount = parseFloat(document.getElementById('wkAmt').value);
+    const r = await adminCall('setWeeklyPayout', null, { userModeId: id, amount });
+    if (r.error) alert(r.error); else { alert('✅ Weekly amount set'); loadPayouts(); }
+  });
 };
 
-window.rejectMode = async function(userModeId) {
-  if (!confirm('Reject this mode activation?')) return;
-  const r = await adminCall('rejectMode', null, { userModeId });
-  if (r.error) alert(r.error); else { alert('❌ Rejected'); loadPendingModes(); }
+window.sendWeekly = async function(id, email) {
+  if (!confirm('Send weekly payout to ' + email + '?')) return;
+  const r = await adminCall('sendWeeklyPayout', null, { userModeId: id });
+  if (r.error) alert(r.error); else { alert('✅ Payout sent: ' + r.amount); loadPayouts(); }
 };
 
 document.getElementById('logout').addEventListener('click', () => { sessionStorage.removeItem('mrc_admin'); location.reload(); });
